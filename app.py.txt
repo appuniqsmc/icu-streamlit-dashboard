@@ -1,0 +1,48 @@
+import streamlit as st
+import pickle
+import numpy as np
+
+# Load model
+model = pickle.load(open("icu_advanced_model.pkl", "rb"))
+
+st.set_page_config(page_title="ICU AI Dashboard", layout="centered")
+
+st.title("🩺 Smart ICU Monitoring Dashboard")
+st.caption("AI-based prediction of ICU deterioration")
+
+# Inputs
+timepoint = st.slider("Timepoint", 0, 4, 0)
+hr = st.slider("Heart Rate", 40, 180, 100)
+bp = st.slider("Blood Pressure", 60, 180, 100)
+spo2 = st.slider("SpO2", 70, 100, 95)
+temp = st.slider("Temperature", 35.0, 41.0, 37.0)
+rr = st.slider("Respiratory Rate", 10, 40, 18)
+gcs = st.slider("GCS", 3, 15, 15)
+age = st.slider("Age", 18, 90, 50)
+
+platelets = st.slider("Platelets", 50, 400, 200)
+bilirubin = st.slider("Bilirubin", 0.1, 5.0, 1.0)
+creatinine = st.slider("Creatinine", 0.5, 5.0, 1.0)
+map_val = st.slider("MAP", 50, 100, 75)
+
+# Predict
+if st.button("🔍 Predict Risk"):
+    input_data = np.array([[timepoint, hr, bp, spo2, temp, rr, gcs, age,
+                            platelets, bilirubin, creatinine, map_val]])
+
+    prediction = model.predict(input_data)[0]
+
+    if prediction == 1:
+        st.error("🚨 HIGH RISK: ICU deterioration likely!")
+    else:
+        st.success("✅ Patient Stable")
+
+# Alerts
+if spo2 < 90:
+    st.warning("⚠️ Low Oxygen")
+
+if bp < 90:
+    st.warning("⚠️ Hypotension")
+
+if gcs < 13:
+    st.warning("⚠️ Low GCS")
